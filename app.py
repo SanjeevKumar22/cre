@@ -985,7 +985,7 @@ if prompt := st.chat_input("Ask about the property analysis..."):
                    
                     response_text = "Error, Please try sometime later"
                     
-            st.markdown(response.text)
+            st.markdown(response_text)
         else:
             response_text = "Please enter a property address and click 'Analyze Property' to begin analysis."
             st.info(response_text)
