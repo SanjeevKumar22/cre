@@ -1,299 +1,3 @@
-# # app.py - Streamlit Application
-# import streamlit as st
-# import pandas as pd
-# import plotly.express as px
-# import plotly.graph_objects as go
-# from datetime import datetime
-# from bq_integration import CREDataAnalyzer
-# import google.generativeai as genai
-
-# # Configure Streamlit page
-# st.set_page_config(
-#     page_title="AI CRE Loan Analyzer",
-#     page_icon="🏢",
-#     layout="wide"
-# )
-
-# # Initialize analyzer
-# analyzer = CREDataAnalyzer()
-
-# # Configure Gemini AI
-# genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
-# model = genai.GenerativeModel('gemini-2.0-flash')
-
-# # Custom CSS for professional look
-# st.markdown("""
-# <style>
-#     .main-header {
-#         font-size: 2.5rem;
-#         color: #1E3A8A;
-#         font-weight: bold;
-#     }
-#     .sub-header {
-#         font-size: 1.5rem;
-#         color: #374151;
-#         margin-top: 1rem;
-#     }
-#     .metric-card {
-#         background: white;
-#         border-radius: 10px;
-#         padding: 1rem;
-#         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-#         border-left: 4px solid #3B82F6;
-#     }
-#     .risk-low {
-#         color: #10B981;
-#         font-weight: bold;
-#     }
-#     .risk-moderate {
-#         color: #F59E0B;
-#         font-weight: bold;
-#     }
-#     .risk-high {
-#         color: #EF4444;
-#         font-weight: bold;
-#     }
-#     .chat-message {
-#         padding: 1rem;
-#         border-radius: 10px;
-#         margin-bottom: 1rem;
-#     }
-#     .user-message {
-#         background-color: #EFF6FF;
-#         border-left: 4px solid #3B82F6;
-#     }
-#     .assistant-message {
-#         background-color: #F3F4F6;
-#         border-left: 4px solid #10B981;
-#     }
-# </style>
-# """, unsafe_allow_html=True)
-
-# # Header
-# st.markdown('<h1 class="main-header">🏢 AI Commercial Real Estate Loan Analyzer</h1>', unsafe_allow_html=True)
-# st.markdown('<p class="sub-header">Automated Deal Memo Generation in Minutes</p>', unsafe_allow_html=True)
-
-# # Initialize session state
-# if 'messages' not in st.session_state:
-#     st.session_state.messages = []
-# if 'analysis_data' not in st.session_state:
-#     st.session_state.analysis_data = None
-
-# # Sidebar for property input
-# with st.sidebar:
-#     st.markdown("### 📍 Property Search")
-#     address_input = st.text_input(
-#         "Enter Property Address:",
-#         placeholder="e.g., 123 Main St, New York, NY 10001",
-#         key="address_input"
-#     )
-    
-#     analyze_btn = st.button("🚀 Analyze Property", type="primary", use_container_width=True)
-    
-#     if analyze_btn and address_input:
-#         with st.spinner("🔍 Analyzing property data..."):
-#             try:
-#                 # Fetch data from BigQuery
-#                 property_data = analyzer.get_property_details(address_input)
-                
-#                 if property_data.empty:
-#                     st.error("Property not found in database")
-#                 else:
-#                     # Calculate metrics
-#                     valuation = analyzer.calculate_valuation(property_data)
-#                     risk_analysis = analyzer.analyze_risk_score(property_data)
-                    
-#                     # Store in session state
-#                     st.session_state.analysis_data = {
-#                         "property": property_data.iloc[0].to_dict(),
-#                         "valuation": valuation,
-#                         "risk": risk_analysis
-#                     }
-                    
-#                     st.success("✅ Analysis complete!")
-                    
-#             except Exception as e:
-#                 st.error(f"Error: {str(e)}")
-    
-#     st.markdown("---")
-#     st.markdown("### 📊 Quick Metrics")
-#     if st.session_state.analysis_data:
-#         data = st.session_state.analysis_data
-#         st.metric("Estimated Value", f"${data['valuation']['estimated_property_value']:,.0f}")
-#         st.metric("Risk Level", data['risk']['risk_level'])
-#         st.metric("Cap Rate", f"{data['valuation']['cap_rate']*100:.2f}%")
-
-# # Main chat interface
-# st.markdown("### 💬 CRE Analysis Assistant")
-
-# # Display chat history
-# for message in st.session_state.messages:
-#     with st.chat_message(message["role"]):
-#         st.markdown(message["content"])
-
-# # Chat input
-# if prompt := st.chat_input("Ask about the property analysis..."):
-#     # Add user message
-#     st.session_state.messages.append({"role": "user", "content": prompt})
-#     with st.chat_message("user"):
-#         st.markdown(prompt)
-    
-#     # Generate AI response
-#     with st.chat_message("assistant"):
-#         if st.session_state.analysis_data:
-#             # Create context from analysis data
-#             context = f"""
-#             Property Analysis Data:
-#             {st.session_state.analysis_data}
-            
-#             User Question: {prompt}
-            
-#             Please provide a detailed analysis based on the data above.
-#             """
-            
-#             response = model.generate_content(context)
-#             print(response.text)
-#             st.markdown(response.text)
-#         else:
-#             st.info("Please enter a property address to begin analysis.")
-    
-#     st.session_state.messages.append({"role": "assistant", "content": response.text if st.session_state.analysis_data else "Please enter a property address to begin analysis."})
-
-# # Display detailed analysis if available
-# if st.session_state.analysis_data:
-#     data = st.session_state.analysis_data
-    
-#     st.markdown("---")
-#     st.markdown("## 📋 Comprehensive Loan Memo")
-    
-#     # Create tabs for different sections
-#     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-#         "📊 Executive Summary",
-#         "🏢 Property Overview",
-#         "📈 Market Analysis",
-#         "👥 Demographics",
-#         "⚠️ Risk Assessment",
-#         "💰 Valuation"
-#     ])
-    
-#     with tab1:
-#         col1, col2, col3 = st.columns(3)
-#         with col1:
-#             st.metric("Property Value", f"${data['valuation']['estimated_property_value']:,.0f}")
-#         with col2:
-#             st.metric("Loan Recommendation", "Approved" if data['risk']['risk_score'] <= 60 else "Review")
-#         with col3:
-#             st.metric("Processing Time", "2 minutes")
-        
-#         st.markdown("### Key Highlights")
-#         st.markdown(f"""
-#         - **Property**: {data['property']['address']}
-#         - **Market**: Strong fundamentals with {data['property']['absorption_rate']*100:.1f}% absorption rate
-#         - **Risk**: {data['risk']['risk_level']} risk profile
-#         - **Recommendation**: {"Recommended for approval" if data['risk']['risk_score'] <= 60 else "Requires additional review"}
-#         """)
-    
-#     with tab2:
-#         col1, col2 = st.columns(2)
-#         with col1:
-#             st.markdown("**Property Details**")
-#             st.write(f"**Address**: {data['property']['address']}")
-#             st.write(f"**Square Feet**: {data['property']['sq_ft']:,.0f}")
-#             st.write(f"**Year Built**: {data['property']['year_built']}")
-#             st.write(f"**Zoning**: {data['property']['zoning_code']}")
-#             st.write(f"**Last Sale**: ${data['property']['last_sale_price']:,.0f}")
-        
-#         with col2:
-#             st.markdown("**Owner Information**")
-#             st.write(f"**Current Owner**: {data['property']['current_owner']}")
-#             st.write(f"**Zip Code**: {data['property']['zip_code']}")
-    
-#     with tab3:
-#         fig1 = go.Figure()
-#         fig1.add_trace(go.Indicator(
-#             mode = "gauge+number+delta",
-#             value = data['property']['vacancy_rate'] * 100,
-#             title = {'text': "Vacancy Rate %"},
-#             delta = {'reference': 10},
-#             gauge = {'axis': {'range': [0, 20]},
-#                      'steps': [
-#                          {'range': [0, 5], 'color': "green"},
-#                          {'range': [5, 15], 'color': "yellow"},
-#                          {'range': [15, 20], 'color': "red"}]
-#                     }
-#         ))
-#         st.plotly_chart(fig1, use_container_width=True)
-    
-#     with tab4:
-#         col1, col2, col3 = st.columns(3)
-#         with col1:
-#             st.metric("Population Growth", f"{data['property']['population_growth_3yr']*100:.1f}%")
-#         with col2:
-#             st.metric("Median Income", f"${data['property']['median_household_income']:,.0f}")
-#         with col3:
-#             st.metric("Unemployment", f"{data['property']['unemployment_rate']*100:.1f}%")
-    
-#     with tab5:
-#         # Risk factors visualization
-#         risk_df = pd.DataFrame.from_dict(data['risk']['risk_factors'], orient='index', columns=['Score'])
-#         fig2 = px.bar(risk_df, y=risk_df.index, x='Score', orientation='h',
-#                      title="Risk Factor Analysis", color='Score',
-#                      color_continuous_scale='RdYlGn_r')
-#         st.plotly_chart(fig2, use_container_width=True)
-        
-#         st.markdown(f"**Overall Risk Score**: {data['risk']['risk_score']:.1f} - **{data['risk']['risk_level']}**")
-    
-#     with tab6:
-#         col1, col2 = st.columns(2)
-#         with col1:
-#             st.markdown("**Valuation Metrics**")
-#             for key, value in data['valuation'].items():
-#                 if isinstance(value, (int, float)):
-#                     if key in ['estimated_property_value', 'gross_potential_income', 'effective_gross_income']:
-#                         st.write(f"**{key.replace('_', ' ').title()}**: ${value:,.0f}")
-#                     elif key in ['cap_rate']:
-#                         st.write(f"**{key.replace('_', ' ').title()}**: {value*100:.2f}%")
-#                     else:
-#                         st.write(f"**{key.replace('_', ' ').title()}**: {value:,.2f}")
-        
-#         with col2:
-#             # Download button for report
-#             report_text = f"""
-#             COMMERCIAL REAL ESTATE LOAN ANALYSIS REPORT
-#             ===========================================
-            
-#             Property: {data['property']['address']}
-#             Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-            
-#             EXECUTIVE SUMMARY:
-#             - Estimated Value: ${data['valuation']['estimated_property_value']:,.0f}
-#             - Risk Level: {data['risk']['risk_level']}
-#             - Recommendation: {"APPROVE" if data['risk']['risk_score'] <= 60 else "REVIEW REQUIRED"}
-            
-#             PROPERTY DETAILS:
-#             - Square Feet: {data['property']['sq_ft']:,.0f}
-#             - Year Built: {data['property']['year_built']}
-#             - Zoning: {data['property']['zoning_code']}
-            
-#             MARKET ANALYSIS:
-#             - Vacancy Rate: {data['property']['vacancy_rate']*100:.1f}%
-#             - Market Rent: ${data['property']['market_rent_per_sqft']:.2f}/sqft
-#             - Cap Rate: {data['valuation']['cap_rate']*100:.2f}%
-            
-#             RISK ASSESSMENT:
-#             - Overall Risk Score: {data['risk']['risk_score']:.1f}
-#             - Flood Zone: {data['property']['flood_zone_risk']}
-#             - Crime Score: {data['property']['crime_score']}
-#             """
-            
-#             st.download_button(
-#                 label="📥 Download Full Report",
-#                 data=report_text,
-#                 file_name=f"CRE_Analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-#                 mime="text/plain"
-#             )
-
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -303,7 +7,8 @@ import json
 import io
 import base64
 from enhanced_bq_integration import EnhancedCREDataAnalyzer
-import google.generativeai as genai
+# import google.generativeai as genai
+from google import genai
 
 
 def get_zone_risk_description(zone):
@@ -1088,8 +793,8 @@ analyzer = EnhancedCREDataAnalyzer()
 
 # Configure Gemini AI
 try:
-    genai.configure(api_key=st.secrets.get("GOOGLE_API_KEY", "demo-key"))
-    model = genai.GenerativeModel('gemini-pro')
+    client = genai.Client()
+    model = client
 except:
     model = None
 
@@ -1243,50 +948,41 @@ if prompt := st.chat_input("Ask about the property analysis..."):
         if st.session_state.analysis_data:
             # Create context from analysis data
             context = f"""
-            Property Analysis Data:
-            Address: {st.session_state.analysis_data['property']['address']}
-            Property Value: ${st.session_state.analysis_data['valuation']['adjusted_property_value']:,.0f}
-            Risk Level: {st.session_state.analysis_data['risk']['risk_level']}
-            Flood Risk Adjustment: {st.session_state.analysis_data['valuation']['flood_risk_adjustment_pct']:.1f}%
-            
-            User Question: {prompt}
-            
-            Please provide a detailed, professional analysis based on the data above.
-            Include specific recommendations and data points.
+           **SYSTEM INSTRUCTION:**
+                You are an expert Commercial Real Estate Loan Underwriter AI Agent. Your task is to produce a highly concise, professional deal memo. The final output **must** be a markdown table with two rows. You must analyze the provided data (Address, Adjusted Property Value, Risk Level, Flood Risk Adjustment) and synthesize it into a loan recommendation based on the risk and valuation metrics.
+
+                **INPUT DATA (Provided via API/SDK as structured context):**
+                Address: {st.session_state.analysis_data['property']['address']}
+                Adjusted Property Value: ${st.session_state.analysis_data['valuation']['adjusted_property_value']:,.0f}
+                Overall Risk Level: {st.session_state.analysis_data['risk']['risk_level']}
+                Flood Risk Adjustment: {st.session_state.analysis_data['valuation']['flood_risk_adjustment_pct']:.1f}%
+
+                **USER QUERY:**
+                {prompt}
+
+                **STRICT OUTPUT FORMAT:**
+                Generate a single Markdown table with two rows labeled "Analysis/Trends" and "Loan Recommendation."
+
+                | Category | Analysis/Recommendation |
+                | :--- | :--- |
+                | **Analysis/Trends** | [Synthesize a one-paragraph summary of how the value and risk adjustment impact the deal, citing the figures.] |
+                | **Loan Recommendation** | [STRICTLY OUTPUT: APPROVE or REVIEW REQUIRED] |
             """
             
             if model:
                 try:
-                    response = model.generate_content(context)
-                    response_text = response.text
-                except:
-                    response_text = f"""Based on the property analysis:
+                    response = client.models.generate_content(model='gemini-2.5-flash',contents=context)
+                    print(response.text)
+                except Exception as e:
+                   
+                    response_text = "Error, Please try sometime later"
                     
-                    **Property**: {st.session_state.analysis_data['property']['address']}
-                    **Value**: ${st.session_state.analysis_data['valuation']['adjusted_property_value']:,.0f}
-                    **Risk**: {st.session_state.analysis_data['risk']['risk_level']} level
-                    **Flood Adjustment**: {st.session_state.analysis_data['valuation']['flood_risk_adjustment_pct']:.1f}%
-                    
-                    The property shows {st.session_state.analysis_data['risk']['risk_level'].lower()} risk characteristics.
-                    {f"Flood risk contributes {st.session_state.analysis_data['valuation']['flood_risk_adjustment_pct']:.1f}% value adjustment." if st.session_state.flood_data else ""}
-                    
-                    Recommendation: {"Approved with standard terms" if st.session_state.analysis_data['risk']['risk_score'] <= 60 else "Requires additional review and potential adjustments."}
-                    """
-            else:
-                response_text = f"""Analysis for {st.session_state.analysis_data['property']['address']}:
-                
-                • Value: ${st.session_state.analysis_data['valuation']['adjusted_property_value']:,.0f}
-                • Risk: {st.session_state.analysis_data['risk']['risk_level']}
-                • Flood Adjustment: {st.session_state.analysis_data['valuation']['flood_risk_adjustment_pct']:.1f}%
-                • Recommendation: {"APPROVE" if st.session_state.analysis_data['risk']['risk_score'] <= 60 else "REVIEW REQUIRED"}
-                """
-            
-            st.markdown(response_text)
+            st.markdown(response.text)
         else:
             response_text = "Please enter a property address and click 'Analyze Property' to begin analysis."
             st.info(response_text)
     
-    st.session_state.messages.append({"role": "assistant", "content": response_text})
+    st.session_state.messages.append({"role": "assistant", "content": response.text})
 
 # Report Generation Section
 if st.session_state.analysis_data:
