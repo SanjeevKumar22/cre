@@ -37,18 +37,18 @@ def generate_comprehensive_report(analysis_data, flood_data, report_format='txt'
         report_content = generate_txt_report(property_info, valuation, risk, flood_data, report_date)
         filename = f"CRE_Analysis_{property_info['address'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
     
-    elif report_format == 'json':
-        report_content = generate_json_report(property_info, valuation, risk, flood_data, report_date)
-        filename = f"CRE_Analysis_{property_info['address'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    # elif report_format == 'json':
+    #     report_content = generate_json_report(property_info, valuation, risk, flood_data, report_date)
+    #     filename = f"CRE_Analysis_{property_info['address'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     
     elif report_format == 'html':
         report_content = generate_html_report(property_info, valuation, risk, flood_data, report_date)
         filename = f"CRE_Analysis_{property_info['address'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
     
-    elif report_format == 'pdf':
-        # For PDF, we generate HTML first and let user convert
-        report_content = generate_html_report(property_info, valuation, risk, flood_data, report_date)
-        filename = f"CRE_Analysis_{property_info['address'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+    # elif report_format == 'pdf':
+    #     # For PDF, we generate HTML first and let user convert
+    #     report_content = generate_html_report(property_info, valuation, risk, flood_data, report_date)
+    #     filename = f"CRE_Analysis_{property_info['address'].replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
     
     return {
         "content": report_content,
@@ -177,62 +177,62 @@ def generate_txt_report(property_info, valuation, risk, flood_data, report_date)
     
     return report
 
-def generate_json_report(property_info, valuation, risk, flood_data, report_date):
-    """Generate JSON format report"""
+# def generate_json_report(property_info, valuation, risk, flood_data, report_date):
+#     """Generate JSON format report"""
     
-    report_data = {
-        "report_metadata": {
-            "generated_date": report_date,
-            "tool": "AI CRE Loan Analyzer",
-            "version": "2.0"
-        },
-        "property_information": {
-            "address": property_info['address'],
-            "zip_code": property_info['zip_code'],
-            "square_feet": property_info['sq_ft'],
-            "year_built": property_info['year_built'],
-            "zoning_code": property_info['zoning_code'],
-            "current_owner": property_info['current_owner'],
-            "last_sale_price": property_info['last_sale_price']
-        },
-        "valuation": {
-            "gross_potential_income": valuation['gross_potential_income'],
-            "effective_gross_income": valuation['effective_gross_income'],
-            "net_operating_income": valuation['net_operating_income'],
-            "noi_margin": valuation['noi_margin_used'],
-            "estimated_property_value": valuation['estimated_property_value'],
-            "flood_risk_adjustment_pct": valuation['flood_risk_adjustment_pct'],
-            "adjusted_property_value": valuation['adjusted_property_value'],
-            "price_per_sqft": valuation['price_per_sqft'],
-            "cap_rate": valuation['cap_rate']
-        },
-        "risk_assessment": {
-            "overall_risk_score": risk['risk_score'],
-            "risk_level": risk['risk_level'],
-            "risk_factors": risk['risk_factors']
-        },
-        "market_analysis": {
-            "market_rent_per_sqft": property_info['market_rent_per_sqft'],
-            "vacancy_rate": property_info['vacancy_rate'],
-            "absorption_rate": property_info['absorption_rate'],
-            "demographics": {
-                "population_growth_3yr": property_info['population_growth_3yr'],
-                "median_household_income": property_info['median_household_income'],
-                "unemployment_rate": property_info['unemployment_rate'],
-                "crime_score": property_info['crime_score'],
-                "regulatory_changes_flag": bool(property_info['regulatory_changes_flag'])
-            }
-        },
-        "flood_risk_assessment": flood_data if flood_data else {},
-        "loan_recommendation": {
-            "decision": "APPROVE" if risk['risk_score'] <= 60 else "REVIEW_REQUIRED",
-            "risk_category": risk['risk_level'],
-            "suggested_ltv": "70%" if risk['risk_score'] <= 30 else "65%" if risk['risk_score'] <= 60 else "60%",
-            "flood_insurance_required": flood_data.get('flood_insurance_required', 'Yes') if flood_data else 'To be determined'
-        }
-    }
+#     report_data = {
+#         "report_metadata": {
+#             "generated_date": report_date,
+#             "tool": "AI CRE Loan Analyzer",
+#             "version": "2.0"
+#         },
+#         "property_information": {
+#             "address": property_info['address'],
+#             "zip_code": property_info['zip_code'],
+#             "square_feet": property_info['sq_ft'],
+#             "year_built": property_info['year_built'],
+#             "zoning_code": property_info['zoning_code'],
+#             "current_owner": property_info['current_owner'],
+#             "last_sale_price": property_info['last_sale_price']
+#         },
+#         "valuation": {
+#             "gross_potential_income": valuation['gross_potential_income'],
+#             "effective_gross_income": valuation['effective_gross_income'],
+#             "net_operating_income": valuation['net_operating_income'],
+#             "noi_margin": valuation['noi_margin_used'],
+#             "estimated_property_value": valuation['estimated_property_value'],
+#             "flood_risk_adjustment_pct": valuation['flood_risk_adjustment_pct'],
+#             "adjusted_property_value": valuation['adjusted_property_value'],
+#             "price_per_sqft": valuation['price_per_sqft'],
+#             "cap_rate": valuation['cap_rate']
+#         },
+#         "risk_assessment": {
+#             "overall_risk_score": risk['risk_score'],
+#             "risk_level": risk['risk_level'],
+#             "risk_factors": risk['risk_factors']
+#         },
+#         "market_analysis": {
+#             "market_rent_per_sqft": property_info['market_rent_per_sqft'],
+#             "vacancy_rate": property_info['vacancy_rate'],
+#             "absorption_rate": property_info['absorption_rate'],
+#             "demographics": {
+#                 "population_growth_3yr": property_info['population_growth_3yr'],
+#                 "median_household_income": property_info['median_household_income'],
+#                 "unemployment_rate": property_info['unemployment_rate'],
+#                 "crime_score": property_info['crime_score'],
+#                 "regulatory_changes_flag": bool(property_info['regulatory_changes_flag'])
+#             }
+#         },
+#         "flood_risk_assessment": flood_data if flood_data else {},
+#         "loan_recommendation": {
+#             "decision": "APPROVE" if risk['risk_score'] <= 60 else "REVIEW_REQUIRED",
+#             "risk_category": risk['risk_level'],
+#             "suggested_ltv": "70%" if risk['risk_score'] <= 30 else "65%" if risk['risk_score'] <= 60 else "60%",
+#             "flood_insurance_required": flood_data.get('flood_insurance_required', 'Yes') if flood_data else 'To be determined'
+#         }
+#     }
     
-    return json.dumps(report_data, indent=2)
+#     return json.dumps(report_data, indent=2)
 
 def generate_html_report(property_info, valuation, risk, flood_data, report_date):
     """Generate HTML format report"""
@@ -835,7 +835,7 @@ with st.sidebar:
     st.markdown("### 📄 Report Format")
     report_format = st.radio(
         "Select Report Format:",
-        ["TXT (Text)", "PDF", "JSON", "HTML"],
+        ["TXT (Text)", "HTML"],
         horizontal=True,
         index=0
     )
@@ -843,8 +843,8 @@ with st.sidebar:
     # Map format to file extension
     format_map = {
         "TXT (Text)": "txt",
-        "PDF": "pdf",
-        "JSON": "json",
+        # "PDF": "pdf",
+        # "JSON": "json",
         "HTML": "html"
     }
     st.session_state.report_format = format_map[report_format]
@@ -973,8 +973,9 @@ if prompt := st.chat_input("Ask about the property analysis..."):
 
                     | Category | Analysis/Recommendation |
                     | :--- | :--- |
-                    | **Analysis/Trends** | [Provide a concise, professional, one-paragraph analysis synthesizing the value, risk level, and flood adjustment.] |
                     | **Loan Recommendation** | [STRICTLY OUTPUT ONE OF THE FOLLOWING: APPROVE or REVIEW REQUIRED] |
+                    | **Analysis/Trends** | [Provide a concise, professional, one-paragraph analysis synthesizing the value, risk level, and flood adjustment.] |
+                    
             """
             
             if model:
@@ -982,8 +983,7 @@ if prompt := st.chat_input("Ask about the property analysis..."):
                     response = client.models.generate_content(model='gemini-2.5-flash',contents=context)
                     response_text = response.text
                 except Exception as e:
-                   
-                    response_text = "Error, Please try sometime later"
+                    response_text = f"Error, Please try sometime later {e}"
                     
             st.markdown(response_text)
         else:
