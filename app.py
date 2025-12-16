@@ -865,7 +865,11 @@ with st.sidebar:
     
     if analyze_btn and address_input:
         with st.spinner("🔍 Analyzing property data..."):
-            try:
+            try:    
+                st.session_state.analysis_data = None
+                st.session_state.flood_data = None
+                st.session_state.generated_report = None
+                st.session_state.messages = []
                 # Fetch data from BigQuery
                 property_data = analyzer.get_comprehensive_property_details(address_input)
                 
@@ -948,31 +952,35 @@ if prompt := st.chat_input("Ask about the property analysis..."):
         if st.session_state.analysis_data:
             # Create context from analysis data
             context = f"""
-           **SYSTEM INSTRUCTION:**
-                You are an expert Commercial Real Estate Loan Underwriter AI Agent. Your task is to produce a highly concise, professional deal memo. The final output **must** be a markdown table with two rows. You must analyze the provided data (Address, Adjusted Property Value, Risk Level, Flood Risk Adjustment) and synthesize it into a loan recommendation based on the risk and valuation metrics.
+                    **SYSTEM INSTRUCTION: COMMERCIAL REAL ESTATE LOAN ANALYZER (MEMO GENERATOR)**
+                    You are an expert commercial real estate underwriter AI Agent. Your primary function is to analyze property deals and generate loan memos using the provided structured data.
 
-                **INPUT DATA (Provided via API/SDK as structured context):**
-                Address: {st.session_state.analysis_data['property']['address']}
-                Adjusted Property Value: ${st.session_state.analysis_data['valuation']['adjusted_property_value']:,.0f}
-                Overall Risk Level: {st.session_state.analysis_data['risk']['risk_level']}
-                Flood Risk Adjustment: {st.session_state.analysis_data['valuation']['flood_risk_adjustment_pct']:.1f}%
+                    **FIRST, EVALUATE USER QUERY:**
+                    If the content of the `User Question` is **NOT** directly related to commercial real estate analysis, finance, market trends, or risk assessment, your output **must be** the single message: `Please refine your prompt. This agent is specialized in Commercial Real Estate Loan Analysis.` Do not proceed to the analysis table.
 
-                **USER QUERY:**
-                {prompt}
+                    **IF RELEVANT, PROCEED TO ANALYSIS:**
+                    If the query is relevant, proceed to generate the two-row markdown table based on the provided data and the user's specific questions.
 
-                **STRICT OUTPUT FORMAT:**
-                Generate a single Markdown table with two rows labeled "Analysis/Trends" and "Loan Recommendation."
+                    **INPUT DATA (Structured Context for Analysis):**
+                    Address: {st.session_state.analysis_data['property']['address']}
+                    Adjusted Property Value: ${st.session_state.analysis_data['valuation']['adjusted_property_value']:,.0f}
+                    Overall Risk Level: {st.session_state.analysis_data['risk']['risk_level']}
+                    Flood Risk Adjustment: {st.session_state.analysis_data['valuation']['flood_risk_adjustment_pct']:.1f}%
+                    User Question: {prompt}
 
-                | Category | Analysis/Recommendation |
-                | :--- | :--- |
-                | **Analysis/Trends** | [Synthesize a one-paragraph summary of how the value and risk adjustment impact the deal, citing the figures.] |
-                | **Loan Recommendation** | [STRICTLY OUTPUT: APPROVE or REVIEW REQUIRED] |
+                    **OUTPUT INSTRUCTIONS (STRICT FORMAT - If Relevant):**
+                    Generate a single Markdown table with two rows labeled "Analysis/Trends" and "Loan Recommendation."
+
+                    | Category | Analysis/Recommendation |
+                    | :--- | :--- |
+                    | **Analysis/Trends** | [Provide a concise, professional, one-paragraph analysis synthesizing the value, risk level, and flood adjustment.] |
+                    | **Loan Recommendation** | [STRICTLY OUTPUT ONE OF THE FOLLOWING: APPROVE or REVIEW REQUIRED] |
             """
             
             if model:
                 try:
                     response = client.models.generate_content(model='gemini-2.5-flash',contents=context)
-                    print(response.text)
+                    response_text = response.text
                 except Exception as e:
                    
                     response_text = "Error, Please try sometime later"
@@ -982,7 +990,7 @@ if prompt := st.chat_input("Ask about the property analysis..."):
             response_text = "Please enter a property address and click 'Analyze Property' to begin analysis."
             st.info(response_text)
     
-    st.session_state.messages.append({"role": "assistant", "content": response.text})
+    st.session_state.messages.append({"role": "assistant", "content": response_text})
 
 # Report Generation Section
 if st.session_state.analysis_data:
